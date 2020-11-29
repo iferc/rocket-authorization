@@ -1,0 +1,19 @@
+[package]
+name = "rocket-authorization"
+version = "0.1.0"
+authors = ["iferc <github@iferc.ca>"]
+edition = "2018"
+description = """
+Library for Rocket.rs web servers to easily access and parse Authorization headers from requests.
+"""
+repository = "https://github.com/iferc/rocket-authorization"
+keywords = ["rocket", "authorization", "header", "parse", "guard"]
+license = "MIT OR Apache-2.0"
+readme = "./README.md"
+exclude = [".github", "example"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rocket = "~0.4"
+base64 = "~0.13"
