@@ -2,7 +2,7 @@ use super::{Basic, Credential};
 use rocket::{http::Status, request::FromRequest, request::Outcome, Request};
 
 #[derive(Debug)]
-pub struct SysAdmin(String);
+pub struct SysAdmin(pub String);
 
 impl<'a, 'r> FromRequest<'a, 'r> for SysAdmin {
     type Error = ();
