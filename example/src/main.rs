@@ -1,22 +1,16 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 #[macro_use]
 extern crate rocket;
+use rocket::{Request, Response};
+use rocket_authorization::prelude::*;
 
 mod custom_auth;
 mod sysadmin_guard;
-
 use custom_auth::CustomAuth;
-use rocket_authorization::prelude::*;
 use sysadmin_guard::SysAdmin;
 
 #[get("/")]
 fn index() -> &'static str {
-    "ok"
-}
-
-#[get("/secure/sysadmin")]
-fn secure_sysadmin(user: SysAdmin) -> &'static str {
-    println!("user: {:#?}", user);
     "ok"
 }
 
@@ -56,20 +50,33 @@ fn auth_custom_safe(auth: Result<Credential<CustomAuth>, ParseError>) -> &'stati
     "ok"
 }
 
+#[get("/secure/sysadmin")]
+fn secure_sysadmin(user: SysAdmin) -> &'static str {
+    println!("user: {:#?}", user);
+    "ok"
+}
+
+#[catch(401)]
+fn not_authorized<'a>(_: &Request) -> Response<'a> {
+    request_authorization::<Basic>("Example Rocket Web Server")
+}
+
 fn rocket() -> rocket::Rocket {
-    rocket::ignite().mount(
-        "/",
-        routes![
-            index,
-            secure_sysadmin,
-            auth_basic,
-            auth_basic_safe,
-            auth_bearer,
-            auth_bearer_safe,
-            auth_custom,
-            auth_custom_safe,
-        ],
-    )
+    rocket::ignite()
+        .mount(
+            "/",
+            routes![
+                index,
+                auth_basic,
+                auth_basic_safe,
+                auth_bearer,
+                auth_bearer_safe,
+                auth_custom,
+                auth_custom_safe,
+                secure_sysadmin,
+            ],
+        )
+        .register(catchers![not_authorized])
 }
 
 fn main() {

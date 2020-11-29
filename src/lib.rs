@@ -7,5 +7,5 @@ pub mod prelude {
     use super::*;
 
     pub use parse::{basic::Basic, oauth::OAuth, Authorization, Credential, ParseError};
-    pub use respond::RequestAuthorization;
+    pub use respond::request_authorization;
 }

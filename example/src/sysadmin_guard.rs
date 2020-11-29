@@ -20,7 +20,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for SysAdmin {
         // these defaults will validate against `Authorization: Basic cm9vdDpwMnNzdzByZA==`
 
         if provided_auth.username == username && provided_auth.password == password {
-            Outcome::Success(SysAdmin(provided_auth.username.clone()))
+            Outcome::Success(SysAdmin(username))
         } else {
             Outcome::Failure((Status::Unauthorized, ()))
         }
