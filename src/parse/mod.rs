@@ -24,6 +24,15 @@ pub trait Authorization: Sized {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Credential<AuthorizationType>(AuthorizationType);
 
+use std::ops::Deref;
+impl<T> Deref for Credential<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 impl<'a, 'r, AuthorizationType: Authorization> FromRequest<'a, 'r>
     for Credential<AuthorizationType>
 {

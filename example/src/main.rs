@@ -1,12 +1,22 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 #[macro_use]
 extern crate rocket;
+
 mod custom_auth;
+mod sysadmin_guard;
+
 use custom_auth::CustomAuth;
 use rocket_authorization::prelude::*;
+use sysadmin_guard::SysAdmin;
 
 #[get("/")]
 fn index() -> &'static str {
+    "ok"
+}
+
+#[get("/secure/sysadmin")]
+fn secure_sysadmin(user: SysAdmin) -> &'static str {
+    println!("user: {:#?}", user);
     "ok"
 }
 
@@ -51,6 +61,7 @@ fn rocket() -> rocket::Rocket {
         "/",
         routes![
             index,
+            secure_sysadmin,
             auth_basic,
             auth_basic_safe,
             auth_bearer,
