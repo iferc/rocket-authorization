@@ -1,15 +1,66 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 #[macro_use]
 extern crate rocket;
+mod custom_auth;
+use custom_auth::CustomAuth;
+use rocket_authorization::prelude::*;
 
 #[get("/")]
 fn index() -> &'static str {
     "ok"
 }
 
-fn rocket() -> rocket::Rocket {
-    rocket::ignite().mount("/", routes![index])
+#[get("/auth/basic")]
+fn auth_basic(auth: Credential<Basic>) -> &'static str {
+    println!("auth: {:#?}", auth);
+    "ok"
 }
+
+#[get("/auth/basic_safe")]
+fn auth_basic_safe(auth: Result<Credential<Basic>, ParseError>) -> &'static str {
+    println!("auth: {:#?}", auth);
+    "ok"
+}
+
+#[get("/auth/bearer")]
+fn auth_bearer(auth: Credential<OAuth>) -> &'static str {
+    println!("auth: {:#?}", auth);
+    "ok"
+}
+
+#[get("/auth/bearer_safe")]
+fn auth_bearer_safe(auth: Result<Credential<OAuth>, ParseError>) -> &'static str {
+    println!("auth: {:#?}", auth);
+    "ok"
+}
+
+#[get("/auth/custom")]
+fn auth_custom(auth: Credential<CustomAuth>) -> &'static str {
+    println!("auth: {:#?}", auth);
+    "ok"
+}
+
+#[get("/auth/custom_safe")]
+fn auth_custom_safe(auth: Result<Credential<CustomAuth>, ParseError>) -> &'static str {
+    println!("auth: {:#?}", auth);
+    "ok"
+}
+
+fn rocket() -> rocket::Rocket {
+    rocket::ignite().mount(
+        "/",
+        routes![
+            index,
+            auth_basic,
+            auth_basic_safe,
+            auth_bearer,
+            auth_bearer_safe,
+            auth_custom,
+            auth_custom_safe,
+        ],
+    )
+}
+
 fn main() {
     rocket().launch();
 }
