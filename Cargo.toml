@@ -1,6 +1,6 @@
 [package]
 name = "rocket-authorization"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["iferc <github@iferc.ca>"]
 edition = "2018"
 description = """

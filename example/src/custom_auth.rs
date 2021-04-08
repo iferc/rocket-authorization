@@ -12,12 +12,12 @@ impl Authorization for CustomAuth {
     fn parse(_: &str, credential: &str) -> Result<Self, ParseError> {
         let components: Vec<_> = credential.split(":").collect();
         if components.len() != 2 {
-            return Err(ParseError::NonColonPairError);
+            return Err(ParseError::CredentialMalformed);
         }
 
         let (slug, token) = (components[0].trim(), components[1].trim());
         if slug.len() == 0 || token.len() == 0 {
-            return Err(ParseError::EmptyError);
+            return Err(ParseError::HeaderMissing);
         }
 
         Ok(CustomAuth {

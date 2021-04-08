@@ -4,21 +4,25 @@ use std::fmt::Debug;
 pub mod basic;
 pub mod oauth;
 
+/// Note that IncompatibleKind and HeaderMissing will trigger a Bad Request response
+/// if used in a trait implementation as they are meant for internal use.
 #[derive(Debug, Clone, PartialEq)]
 pub enum ParseError {
-    NotExists,
-    EmptyError,
+    /// Responds with HTTP Unauthorized
+    Unauthorized,
+    /// Responds with HTTP Unauthorized
     IncompatibleKind,
-    UnknownKind,
-    InvalidHeader,
-    UTFParseError,
-    Base64DecodeError,
-    NonColonPairError,
+    /// Responds with HTTP Unauthorized
+    HeaderMissing,
+    /// Responds with HTTP Bad Request
+    HeaderMalformed,
+    /// Responds with HTTP Bad Request
+    CredentialMalformed(String),
 }
 
 pub trait Authorization: Sized {
     const KIND: &'static str;
-    fn parse(kind: &str, credential: &str) -> Result<Self, ParseError>;
+    fn parse(kind: &str, credential: &str, request: &Request) -> Result<Self, ParseError>;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -42,11 +46,11 @@ impl<'a, 'r, AuthorizationType: Authorization> FromRequest<'a, 'r>
         request: &Request,
     ) -> Outcome<Self, (Status, <Self as FromRequest<'a, 'r>>::Error), ()> {
         match request.headers().get_one("Authorization") {
-            None => Outcome::Failure((Status::Unauthorized, ParseError::NotExists)),
+            None => Outcome::Failure((Status::Unauthorized, ParseError::HeaderMissing)),
             Some(authorization_header) => {
                 let header_sections: Vec<_> = authorization_header.split_whitespace().collect();
                 if header_sections.len() != 2 {
-                    return Outcome::Failure((Status::Unauthorized, ParseError::InvalidHeader));
+                    return Outcome::Failure((Status::BadRequest, ParseError::HeaderMalformed));
                 }
 
                 let (kind, credential) = (header_sections[0], header_sections[1]);
@@ -55,9 +59,12 @@ impl<'a, 'r, AuthorizationType: Authorization> FromRequest<'a, 'r>
                     return Outcome::Failure((Status::Unauthorized, ParseError::IncompatibleKind));
                 }
 
-                match AuthorizationType::parse(kind, credential) {
-                    Ok(credentials) => Outcome::Success(Credential(credentials)),
+                match AuthorizationType::parse(kind, credential, request) {
+                    Err(ParseError::Unauthorized) => {
+                        Outcome::Failure((Status::Unauthorized, ParseError::Unauthorized))
+                    }
                     Err(err) => Outcome::Failure((Status::BadRequest, err)),
+                    Ok(credentials) => Outcome::Success(Credential(credentials)),
                 }
             }
         }
