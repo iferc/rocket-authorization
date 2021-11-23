@@ -4,10 +4,12 @@ use rocket::{http::Status, request::FromRequest, request::Outcome, Request};
 #[derive(Debug)]
 pub struct SysAdmin(pub String);
 
-impl<'a, 'r> FromRequest<'a, 'r> for SysAdmin {
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for SysAdmin {
     type Error = ();
-    fn from_request(request: &Request) -> Outcome<Self, Self::Error> {
-        let provided_auth = match Credential::<Basic>::from_request(request) {
+
+    async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
+        let provided_auth = match Credential::<Basic>::from_request(request).await {
             Outcome::Success(auth) => auth,
             Outcome::Failure(error) => return Outcome::Failure((error.0, ())),
             Outcome::Forward(_) => return Outcome::Forward(()),

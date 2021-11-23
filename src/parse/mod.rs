@@ -1,4 +1,6 @@
-use rocket::{http::Status, request::FromRequest, Outcome, Request};
+pub use rocket::Request;
+
+use rocket::{http::Status, outcome::Outcome, request::FromRequest};
 use std::fmt::Debug;
 
 pub mod basic;
@@ -37,14 +39,13 @@ impl<T> Deref for Credential<T> {
     }
 }
 
-impl<'a, 'r, AuthorizationType: Authorization> FromRequest<'a, 'r>
-    for Credential<AuthorizationType>
-{
+#[rocket::async_trait]
+impl<'r, AuthorizationType: Authorization> FromRequest<'r> for Credential<AuthorizationType> {
     type Error = ParseError;
 
-    fn from_request(
-        request: &Request,
-    ) -> Outcome<Self, (Status, <Self as FromRequest<'a, 'r>>::Error), ()> {
+    async fn from_request(
+        request: &'r Request<'_>,
+    ) -> Outcome<Self, (Status, <Self as FromRequest<'r>>::Error), ()> {
         match request.headers().get_one("Authorization") {
             None => Outcome::Failure((Status::Unauthorized, ParseError::HeaderMissing)),
             Some(authorization_header) => {
