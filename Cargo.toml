@@ -1,8 +1,8 @@
 [package]
 name = "rocket-authorization"
-version = "0.1.1"
+version = "0.2.0-rc.1"
 authors = ["iferc <github@iferc.ca>"]
-edition = "2018"
+edition = "2021"
 description = """
 Library for Rocket.rs web servers to easily access and parse Authorization headers from requests.
 """

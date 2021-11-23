@@ -2,10 +2,10 @@
 name = "rocket-authorization-example"
 version = "0.1.0"
 authors = ["iferc <github@iferc.ca>"]
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 rocket = "0.5.0-rc.1"
-rocket-authorization = { version = "*", path = ".." }
+rocket-authorization = { version = "0.2.0-rc.1", path = ".." }
