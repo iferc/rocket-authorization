@@ -74,5 +74,5 @@ fn rocket() -> rocket::Rocket<Build> {
 
 #[rocket::main]
 async fn main() {
-    rocket().launch().await.unwrap();
+    let _ = rocket().launch().await.unwrap();
 }

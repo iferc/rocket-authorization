@@ -6,10 +6,11 @@ pub struct CustomAuth {
     pub token: String,
 }
 
+#[rocket::async_trait]
 impl Authorization for CustomAuth {
     const KIND: &'static str = "Custom";
 
-    fn parse(_: &str, credential: &str, _request: &Request) -> Result<Self, ParseError> {
+    async fn parse(_: &str, credential: &str, _request: &Request) -> Result<Self, ParseError> {
         let components: Vec<_> = credential.split(":").collect();
         if components.len() != 2 {
             return Err(ParseError::CredentialMalformed(String::from(
