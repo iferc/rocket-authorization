@@ -6,9 +6,11 @@ pub struct Basic {
     pub password: String,
 }
 
+#[rocket::async_trait]
 impl Authorization for Basic {
     const KIND: &'static str = "Basic";
-    fn parse(_: &str, credential: &str, _: &Request) -> Result<Self, ParseError> {
+
+    async fn parse(_: &str, credential: &str, _: &Request) -> Result<Self, ParseError> {
         let decoded_payload = base64::decode(credential).or(Err(
             ParseError::CredentialMalformed(String::from("Base64 Decode Error")),
         ))?;

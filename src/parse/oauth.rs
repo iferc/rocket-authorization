@@ -5,9 +5,11 @@ pub struct OAuth {
     pub token: String,
 }
 
+#[rocket::async_trait]
 impl Authorization for OAuth {
     const KIND: &'static str = "Bearer";
-    fn parse(_: &str, credential: &str, _: &Request) -> Result<Self, ParseError> {
+
+    async fn parse(_: &str, credential: &str, _: &Request) -> Result<Self, ParseError> {
         let decoded_text = String::from_utf8(credential.into()).or(Err(
             ParseError::CredentialMalformed(String::from("UTF8 Parse Error")),
         ))?;

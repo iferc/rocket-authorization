@@ -22,9 +22,10 @@ pub enum ParseError {
     CredentialMalformed(String),
 }
 
+#[rocket::async_trait]
 pub trait Authorization: Sized {
     const KIND: &'static str;
-    fn parse(kind: &str, credential: &str, request: &Request) -> Result<Self, ParseError>;
+    async fn parse(kind: &str, credential: &str, request: &Request) -> Result<Self, ParseError>;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -60,7 +61,7 @@ impl<'r, AuthorizationType: Authorization> FromRequest<'r> for Credential<Author
                     return Outcome::Failure((Status::Unauthorized, ParseError::IncompatibleKind));
                 }
 
-                match AuthorizationType::parse(kind, credential, request) {
+                match AuthorizationType::parse(kind, credential, request).await {
                     Err(ParseError::Unauthorized) => {
                         Outcome::Failure((Status::Unauthorized, ParseError::Unauthorized))
                     }
