@@ -46,26 +46,26 @@ impl<'r, AuthorizationType: Authorization> FromRequest<'r> for Credential<Author
 
     async fn from_request(
         request: &'r Request<'_>,
-    ) -> Outcome<Self, (Status, <Self as FromRequest<'r>>::Error), ()> {
+    ) -> Outcome<Self, (Status, <Self as FromRequest<'r>>::Error), Status> {
         match request.headers().get_one("Authorization") {
-            None => Outcome::Failure((Status::Unauthorized, ParseError::HeaderMissing)),
+            None => Outcome::Error((Status::Unauthorized, ParseError::HeaderMissing)),
             Some(authorization_header) => {
                 let header_sections: Vec<_> = authorization_header.split_whitespace().collect();
                 if header_sections.len() != 2 {
-                    return Outcome::Failure((Status::BadRequest, ParseError::HeaderMalformed));
+                    return Outcome::Error((Status::BadRequest, ParseError::HeaderMalformed));
                 }
 
                 let (kind, credential) = (header_sections[0], header_sections[1]);
 
                 if AuthorizationType::KIND != kind {
-                    return Outcome::Failure((Status::Unauthorized, ParseError::IncompatibleKind));
+                    return Outcome::Error((Status::Unauthorized, ParseError::IncompatibleKind));
                 }
 
                 match AuthorizationType::parse(kind, credential, request).await {
                     Err(ParseError::Unauthorized) => {
-                        Outcome::Failure((Status::Unauthorized, ParseError::Unauthorized))
+                        Outcome::Error((Status::Unauthorized, ParseError::Unauthorized))
                     }
-                    Err(err) => Outcome::Failure((Status::BadRequest, err)),
+                    Err(err) => Outcome::Error((Status::BadRequest, err)),
                     Ok(credentials) => Outcome::Success(Credential(credentials)),
                 }
             }
