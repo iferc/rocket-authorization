@@ -11,8 +11,8 @@ impl<'r> FromRequest<'r> for SysAdmin {
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
         let provided_auth = match Credential::<Basic>::from_request(request).await {
             Outcome::Success(auth) => auth,
-            Outcome::Failure(error) => return Outcome::Failure((error.0, ())),
-            Outcome::Forward(_) => return Outcome::Forward(()),
+            Outcome::Error(error) => return Outcome::Error((error.0, ())),
+            Outcome::Forward(status) => return Outcome::Forward(status),
         };
 
         // THIS IS FOR DEMONSTRATION PURPOSES ONLY, THIS IS NOT SECURE USAGE
@@ -24,7 +24,7 @@ impl<'r> FromRequest<'r> for SysAdmin {
         if provided_auth.username == username && provided_auth.password == password {
             Outcome::Success(SysAdmin(username))
         } else {
-            Outcome::Failure((Status::Unauthorized, ()))
+            Outcome::Error((Status::Unauthorized, ()))
         }
     }
 }
