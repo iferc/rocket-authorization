@@ -1,6 +1,6 @@
 [package]
 name = "rocket-authorization"
-version = "0.2.0-rc.4"
+version = "1.0.0"
 authors = ["iferc <github@iferc.ca>"]
 edition = "2021"
 description = """
@@ -20,4 +20,5 @@ path = "./example/src/main.rs"
 
 [dependencies]
 rocket = "0.5.0-rc.4"
-base64 = "~0.13"
+base64 = "~0.21"
+thiserror = "~1.0"
