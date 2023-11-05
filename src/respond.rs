@@ -7,9 +7,8 @@ pub fn request_authorization<'a, AuthorizationType: Authorization>(realm: &'a st
         .raw_header(
             "WWW-Authenticate",
             format!(
-                r#"{} realm="{}", charset="UTF-8""#,
-                AuthorizationType::KIND,
-                realm
+                r#"{} realm="{realm}", charset="UTF-8""#,
+                AuthorizationType::KIND
             ),
         )
         .finalize()
