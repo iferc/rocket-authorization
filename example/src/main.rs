@@ -1,5 +1,7 @@
 use rocket::{get, routes, Build};
-use rocket_authorization::prelude::*;
+use rocket_authorization::basic::Basic;
+use rocket_authorization::oauth::OAuth;
+use rocket_authorization::{AuthError, Credential};
 
 mod custom_auth;
 mod sysadmin_guard;
@@ -17,7 +19,7 @@ fn auth_basic(auth: Credential<Basic>) -> String {
 }
 
 #[get("/auth/basic_safe")]
-fn auth_basic_safe(auth: Result<Credential<Basic>, ParseError>) -> String {
+fn auth_basic_safe(auth: Result<Credential<Basic>, AuthError>) -> String {
     match auth {
         Ok(credential) => format!("success with {}", credential.username),
         Err(_) => "failed".into(),
@@ -30,7 +32,7 @@ fn auth_bearer(auth: Credential<OAuth>) -> String {
 }
 
 #[get("/auth/bearer_safe")]
-fn auth_bearer_safe(auth: Result<Credential<OAuth>, ParseError>) -> String {
+fn auth_bearer_safe(auth: Result<Credential<OAuth>, AuthError>) -> String {
     match auth {
         Ok(credential) => format!("success with {}", credential.token),
         Err(_) => "failed".into(),
@@ -43,7 +45,7 @@ fn auth_custom(auth: Credential<CustomAuth>) -> String {
 }
 
 #[get("/auth/custom_safe")]
-fn auth_custom_safe(auth: Result<Credential<CustomAuth>, ParseError>) -> String {
+fn auth_custom_safe(auth: Result<Credential<CustomAuth>, AuthError>) -> String {
     match auth {
         Ok(credential) => format!("success with {} for {}", credential.token, credential.slug),
         Err(_) => "failed".into(),
@@ -56,7 +58,6 @@ fn secure_sysadmin(user: SysAdmin) -> String {
 }
 
 fn rocket() -> rocket::Rocket<Build> {
-    // let abc = Catcher::new(401, not_authorized);
     rocket::build().mount(
         "/",
         routes![
@@ -74,5 +75,5 @@ fn rocket() -> rocket::Rocket<Build> {
 
 #[rocket::main]
 async fn main() {
-    let _ = rocket().launch().await.unwrap();
+    let _ = rocket().launch().await.expect("Failed to launch server.");
 }

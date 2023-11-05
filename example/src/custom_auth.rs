@@ -1,4 +1,4 @@
-use rocket_authorization::parse::{Authorization, ParseError, Request};
+use rocket_authorization::{AuthError, Authorization, Request};
 
 #[derive(Debug)]
 pub struct CustomAuth {
@@ -10,17 +10,17 @@ pub struct CustomAuth {
 impl Authorization for CustomAuth {
     const KIND: &'static str = "Custom";
 
-    async fn parse(_: &str, credential: &str, _request: &Request) -> Result<Self, ParseError> {
+    async fn parse(_: &str, credential: &str, _request: &Request) -> Result<Self, AuthError> {
         let components: Vec<_> = credential.split(":").collect();
         if components.len() != 2 {
-            return Err(ParseError::CredentialMalformed(String::from(
-                "Invalid Key-Value Pair Format Error",
-            )));
+            return Err(AuthError::Unprocessable(
+                "Invalid Key-Value Pair Format Error".into(),
+            ));
         }
 
         let (slug, token) = (components[0].trim(), components[1].trim());
         if slug.len() == 0 || token.len() == 0 {
-            return Err(ParseError::HeaderMissing);
+            return Err(AuthError::HeaderMissing);
         }
 
         Ok(CustomAuth {
