@@ -13,48 +13,80 @@ fn index() -> &'static str {
     "ok"
 }
 
-#[get("/auth/basic")]
-fn auth_basic(auth: Credential<Basic>) -> String {
-    format!("success with {}", auth.username)
+#[get("/auth/basic_only")]
+fn auth_basic_only(auth: Credential<Basic>) -> String {
+    // This function only executes with valid basic authentication credentials.
+
+    // Note that the `Basic` type extracts a username and password,
+    // but you still need to do your own password validation.
+
+    format!("Hello {}!", auth.username)
 }
 
-#[get("/auth/basic_safe")]
-fn auth_basic_safe(auth: Result<Credential<Basic>, AuthError>) -> String {
+#[get("/auth/basic_maybe")]
+fn auth_basic_maybe(auth: Result<Credential<Basic>, AuthError>) -> String {
     match auth {
-        Ok(credential) => format!("success with {}", credential.username),
-        Err(_) => "failed".into(),
+        Ok(credential) => format!("Hello {}!", credential.username),
+
+        Err(error) => {
+            // Since we extract a `Result<Credential<_>, AuthError>`,
+            // we can have custom handling of not being authenticated.
+
+            format!("Error {error}!")
+        }
     }
 }
 
-#[get("/auth/bearer")]
-fn auth_bearer(auth: Credential<OAuth>) -> String {
-    format!("success with {}", auth.token)
+#[get("/auth/bearer_only")]
+fn auth_bearer_only(auth: Credential<OAuth>) -> String {
+    // This function only executes with valid OAuth bearer authentication token.
+
+    // Note that the `OAuth` type extracts a bearer token,
+    // but you still need to do your own password validation.
+
+    format!("Token {}!", auth.token)
 }
 
-#[get("/auth/bearer_safe")]
-fn auth_bearer_safe(auth: Result<Credential<OAuth>, AuthError>) -> String {
+#[get("/auth/bearer_maybe")]
+fn auth_bearer_maybe(auth: Result<Credential<OAuth>, AuthError>) -> String {
     match auth {
-        Ok(credential) => format!("success with {}", credential.token),
-        Err(_) => "failed".into(),
+        Ok(credential) => format!("Token {}!", credential.token),
+
+        Err(error) => {
+            // Since we extract a `Result<Credential<_>, AuthError>`,
+            // we can have custom handling of not being authenticated.
+
+            format!("Error {error}!")
+        }
     }
 }
 
-#[get("/auth/custom")]
-fn auth_custom(auth: Credential<CustomAuth>) -> String {
-    format!("success with {} for {}", auth.token, auth.slug)
+#[get("/auth/custom_only")]
+fn auth_custom_only(auth: Credential<CustomAuth>) -> String {
+    // This function only executes with valid authentication value.
+
+    format!("Got token {} for {}!", auth.token, auth.slug)
 }
 
-#[get("/auth/custom_safe")]
-fn auth_custom_safe(auth: Result<Credential<CustomAuth>, AuthError>) -> String {
+#[get("/auth/custom_maybe")]
+fn auth_custom_maybe(auth: Result<Credential<CustomAuth>, AuthError>) -> String {
     match auth {
-        Ok(credential) => format!("success with {} for {}", credential.token, credential.slug),
-        Err(_) => "failed".into(),
+        Ok(credential) => format!("Got token {} for {}!", credential.token, credential.slug),
+
+        Err(error) => {
+            // Since we extract a `Result<Credential<_>, AuthError>`,
+            // we can have custom handling of not being authenticated.
+
+            format!("Error {error}!")
+        }
     }
 }
 
 #[get("/secure/sysadmin")]
 fn secure_sysadmin(user: SysAdmin) -> String {
-    format!("success with {}", user.0)
+    // This function only executes with valid authentication value.
+
+    format!("Hello {}!", user.0)
 }
 
 fn rocket() -> rocket::Rocket<Build> {
@@ -62,12 +94,12 @@ fn rocket() -> rocket::Rocket<Build> {
         "/",
         routes![
             index,
-            auth_basic,
-            auth_basic_safe,
-            auth_bearer,
-            auth_bearer_safe,
-            auth_custom,
-            auth_custom_safe,
+            auth_basic_only,
+            auth_basic_maybe,
+            auth_bearer_only,
+            auth_bearer_maybe,
+            auth_custom_only,
+            auth_custom_maybe,
             secure_sysadmin,
         ],
     )

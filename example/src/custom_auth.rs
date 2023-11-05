@@ -11,7 +11,7 @@ impl Authorization for CustomAuth {
     const KIND: &'static str = "Custom";
 
     async fn parse(_: &str, credential: &str, _request: &Request) -> Result<Self, AuthError> {
-        let components: Vec<_> = credential.split(":").collect();
+        let components: Vec<_> = credential.split(':').collect();
         if components.len() != 2 {
             return Err(AuthError::Unprocessable(
                 "Invalid Key-Value Pair Format Error".into(),
@@ -19,7 +19,7 @@ impl Authorization for CustomAuth {
         }
 
         let (slug, token) = (components[0].trim(), components[1].trim());
-        if slug.len() == 0 || token.len() == 0 {
+        if slug.is_empty() || token.is_empty() {
             return Err(AuthError::HeaderMissing);
         }
 
